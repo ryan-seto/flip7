@@ -6,6 +6,8 @@ import type {
   GameScreen,
   RoundScore,
   UndoState,
+  ActionMode,
+  Flip3State,
   Flip7Game,
 } from "../types/game";
 import { MODIFIERS } from "../constants/deck";
@@ -31,6 +33,10 @@ export function useFlip7Game(): Flip7Game {
   const [deckUsed, setDeckUsed] = useState<Card[]>([]);
   const [undoStack, setUndoStack] = useState<UndoState[]>([]);
   const [showDeckView, setShowDeckView] = useState(false);
+
+  // Action card state
+  const [actionMode, setActionMode] = useState<ActionMode | null>(null);
+  const [flip3State, setFlip3State] = useState<Flip3State | null>(null);
 
   // Helper: get next active player after given player
   const getNextActivePlayer = useCallback(
@@ -88,6 +94,8 @@ export function useFlip7Game(): Flip7Game {
     setActivePlayer(starter);
     setDeckUsed([]);
     setUndoStack([]);
+    setActionMode(null);
+    setFlip3State(null);
   };
 
   const startGame = () => {
@@ -110,6 +118,8 @@ export function useFlip7Game(): Flip7Game {
         playerStatus: { ...playerStatus },
         activePlayer,
         deckUsed: [...deckUsed],
+        actionMode,
+        flip3State,
       },
     ]);
   };
@@ -121,60 +131,156 @@ export function useFlip7Game(): Flip7Game {
     setPlayerStatus(prev.playerStatus);
     setActivePlayer(prev.activePlayer);
     setDeckUsed(prev.deckUsed);
+    setActionMode(prev.actionMode);
+    setFlip3State(prev.flip3State);
     setUndoStack((s) => s.slice(0, -1));
   };
 
-  const dealCard = (card: Card, targetPlayer?: string) => {
-    const target = targetPlayer ?? activePlayer;
+  // Helper: check for bust when dealing a number card, returns updated status
+  const checkBust = (
+    target: string,
+    newCards: Record<string, Card[]>,
+    currentStatus: Record<string, PlayerStatus>
+  ): { newStatus: Record<string, PlayerStatus>; busted: boolean } => {
+    const numCards = newCards[target].filter((c) => c.type === "number");
+    const nums = numCards.map((c) => c.value);
+    const hasDuplicate = nums.length !== new Set(nums).size;
+
+    if (!hasDuplicate) return { newStatus: currentStatus, busted: false };
+
+    const has2ndChance = newCards[target].some(
+      (c) => c.type === "action" && c.value === "2ndChance"
+    );
+    if (has2ndChance) {
+      const scIdx = newCards[target].findIndex(
+        (c) => c.type === "action" && c.value === "2ndChance"
+      );
+      const removed1 = newCards[target].splice(scIdx, 1)[0];
+      const dupIdx = newCards[target].length - 1;
+      const removed2 = newCards[target].splice(dupIdx, 1)[0];
+      setDeckUsed((prev) => [...prev, removed1, removed2]);
+      return { newStatus: { ...currentStatus, [target]: "stayed" }, busted: true };
+    } else {
+      return { newStatus: { ...currentStatus, [target]: "busted" }, busted: true };
+    }
+  };
+
+  const dealCard = (card: Card) => {
+    // Block dealing while waiting for action target selection
+    if (actionMode) return;
+
+    // ── Flip3 forced draw mode ──
+    if (flip3State) {
+      const target = flip3State.targetPlayer;
+      if (playerStatus[target] !== "active") {
+        // Target already out, end flip3
+        setFlip3State(null);
+        const next = getNextActivePlayer(flip3State.sourcePlayer);
+        setActivePlayer(next);
+        return;
+      }
+
+      saveUndoState();
+
+      const newCards = { ...playerCards };
+      newCards[target] = [...newCards[target], card];
+      let newStatus = { ...playerStatus };
+      let knockedOut = false;
+      const newCardsDealt = flip3State.cardsDealt + 1;
+
+      // During flip3, only number cards can cause bust; actions/modifiers just go to hand
+      if (card.type === "number") {
+        const result = checkBust(target, newCards, newStatus);
+        newStatus = result.newStatus;
+        knockedOut = result.busted;
+      }
+
+      setPlayerCards(newCards);
+      setPlayerStatus(newStatus);
+
+      if (knockedOut || newCardsDealt >= 3) {
+        // Flip3 done — advance from the player who drew Flip3
+        setFlip3State(null);
+        const next = getNextActivePlayer(flip3State.sourcePlayer, newStatus);
+        setActivePlayer(next);
+      } else {
+        setFlip3State({ ...flip3State, cardsDealt: newCardsDealt });
+      }
+      return;
+    }
+
+    // ── Normal dealing mode ──
+    const target = activePlayer;
     if (!target || playerStatus[target] !== "active") return;
     saveUndoState();
 
     const newCards = { ...playerCards };
     newCards[target] = [...newCards[target], card];
     let newStatus = { ...playerStatus };
-    let playerGotKnockedOut = false;
+    let knockedOut = false;
 
     if (card.type === "number") {
-      const numCards = newCards[target].filter((c) => c.type === "number");
-      const nums = numCards.map((c) => c.value);
-      const hasDuplicate = nums.length !== new Set(nums).size;
-
-      if (hasDuplicate) {
-        const has2ndChance = newCards[target].some(
-          (c) => c.type === "action" && c.value === "2ndChance"
-        );
-        if (has2ndChance) {
-          const scIdx = newCards[target].findIndex(
-            (c) => c.type === "action" && c.value === "2ndChance"
-          );
-          const removed1 = newCards[target].splice(scIdx, 1)[0];
-          const dupIdx = newCards[target].length - 1;
-          const removed2 = newCards[target].splice(dupIdx, 1)[0];
-          setDeckUsed((prev) => [...prev, removed1, removed2]);
-          newStatus = { ...newStatus, [target]: "stayed" };
-          playerGotKnockedOut = true;
-        } else {
-          newStatus = { ...newStatus, [target]: "busted" };
-          playerGotKnockedOut = true;
-        }
-      }
+      const result = checkBust(target, newCards, newStatus);
+      newStatus = result.newStatus;
+      knockedOut = result.busted;
     }
 
     setPlayerCards(newCards);
     setPlayerStatus(newStatus);
 
-    // Action cards stay on current player for resolution
     if (card.type === "action") {
+      if (card.value === "2ndChance") {
+        // 2nd Chance is passive — goes to hand, auto-advance
+        const next = getNextActivePlayer(target, knockedOut ? newStatus : null);
+        setActivePlayer(next);
+        return;
+      }
+
+      // Freeze or Flip3
+      const isInitialDeal = (playerCards[target]?.length || 0) === 0;
+      if (isInitialDeal) {
+        // First card of the round — action has no effect, auto-advance
+        const next = getNextActivePlayer(target);
+        setActivePlayer(next);
+      } else {
+        // Enter targeting mode
+        setActionMode({
+          type: card.value === "Freeze" ? "freeze" : "flip3",
+          sourcePlayer: target,
+        });
+      }
       return;
     }
 
     // Number and modifier cards: auto-advance to next player
-    const nextPlayer = getNextActivePlayer(target, playerGotKnockedOut ? newStatus : null);
-    if (nextPlayer) {
-      setActivePlayer(nextPlayer);
-    } else {
-      setActivePlayer(null);
+    const nextPlayer = getNextActivePlayer(target, knockedOut ? newStatus : null);
+    setActivePlayer(nextPlayer);
+  };
+
+  const selectActionTarget = (targetPlayer: string) => {
+    if (!actionMode) return;
+    if (playerStatus[targetPlayer] !== "active") return;
+
+    saveUndoState();
+
+    if (actionMode.type === "freeze") {
+      const newStatus: Record<string, PlayerStatus> = { ...playerStatus, [targetPlayer]: "frozen" };
+      setPlayerStatus(newStatus);
+      setActionMode(null);
+      const next = getNextActivePlayer(actionMode.sourcePlayer, newStatus);
+      setActivePlayer(next);
+    } else if (actionMode.type === "flip3") {
+      setFlip3State({
+        sourcePlayer: actionMode.sourcePlayer,
+        targetPlayer,
+        cardsDealt: 0,
+      });
+      setActionMode(null);
     }
+  };
+
+  const cancelAction = () => {
+    setActionMode(null);
   };
 
   const setStatusAndAdvance = (player: string, status: PlayerStatus) => {
@@ -293,6 +399,10 @@ export function useFlip7Game(): Flip7Game {
     showDeckView,
     setShowDeckView,
     setActivePlayer,
+    actionMode,
+    flip3State,
+    selectActionTarget,
+    cancelAction,
     remainingNumbers,
     remainingMods,
     remainingActs,

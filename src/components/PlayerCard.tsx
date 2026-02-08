@@ -5,6 +5,7 @@ interface PlayerCardProps {
   player: string;
   isActive: boolean;
   isDealer: boolean;
+  isTargetable?: boolean;
   onClick: () => void;
   bustProb: number;
   score: number;
@@ -24,6 +25,7 @@ export function PlayerCard({
   player,
   isActive,
   isDealer,
+  isTargetable,
   onClick,
   bustProb,
   score,
@@ -35,18 +37,38 @@ export function PlayerCard({
   const isOut = status !== "active";
   const { color: statusColor, label: statusText } = STATUS_CONFIG[status];
   const flip7 = uniqueNumberCount >= 7;
+  const clickable = isTargetable || !isOut;
 
   return (
     <div
-      onClick={!isOut ? onClick : undefined}
+      onClick={clickable ? onClick : undefined}
       className="rounded-xl px-4 py-3.5 relative overflow-hidden transition-all duration-200"
       style={{
-        background: isActive ? "#16213e" : "#0f0f23",
-        border: `2px solid ${isActive ? "#4ecca3" : isBusted ? "#e9456040" : "#1a1a3e"}`,
-        cursor: !isOut ? "pointer" : "default",
-        boxShadow: isActive ? "0 0 20px #4ecca320" : "none",
+        background: isTargetable ? "#1a2e3e" : isActive ? "#16213e" : "#0f0f23",
+        border: `2px solid ${
+          isTargetable
+            ? "#f5a623"
+            : isActive
+              ? "#4ecca3"
+              : isBusted
+                ? "#e9456040"
+                : "#1a1a3e"
+        }`,
+        cursor: clickable ? "pointer" : "default",
+        boxShadow: isTargetable
+          ? "0 0 20px #f5a62330"
+          : isActive
+            ? "0 0 20px #4ecca320"
+            : "none",
       }}
     >
+      {/* Targeting overlay indicator */}
+      {isTargetable && (
+        <div className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded font-mono tracking-wide bg-flip-gold/20 text-flip-gold animate-pulse">
+          TAP TO SELECT
+        </div>
+      )}
+
       {/* Header row */}
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">

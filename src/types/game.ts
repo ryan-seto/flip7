@@ -24,11 +24,24 @@ export interface CardColors {
   text: string;
 }
 
+export interface ActionMode {
+  type: "freeze" | "flip3";
+  sourcePlayer: string;
+}
+
+export interface Flip3State {
+  sourcePlayer: string;
+  targetPlayer: string;
+  cardsDealt: number;
+}
+
 export interface UndoState {
   playerCards: Record<string, Card[]>;
   playerStatus: Record<string, PlayerStatus>;
   activePlayer: string | null;
   deckUsed: Card[];
+  actionMode: ActionMode | null;
+  flip3State: Flip3State | null;
 }
 
 export interface Flip7Game {
@@ -59,6 +72,12 @@ export interface Flip7Game {
   setShowDeckView: (show: boolean) => void;
   setActivePlayer: (player: string) => void;
 
+  // Action card state
+  actionMode: ActionMode | null;
+  flip3State: Flip3State | null;
+  selectActionTarget: (targetPlayer: string) => void;
+  cancelAction: () => void;
+
   // Derived values
   remainingNumbers: Record<number, number>;
   remainingMods: Record<string, number>;
@@ -71,7 +90,7 @@ export interface Flip7Game {
   actOptions: CardOption[];
 
   // Actions
-  dealCard: (card: Card, targetPlayer?: string) => void;
+  dealCard: (card: Card) => void;
   setStatusAndAdvance: (player: string, status: PlayerStatus) => void;
   advanceToNextPlayer: () => void;
   discardCard: (card: Card) => void;

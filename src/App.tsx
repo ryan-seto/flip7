@@ -36,6 +36,10 @@ export default function App() {
           showDeckView={game.showDeckView}
           setShowDeckView={game.setShowDeckView}
           setActivePlayer={game.setActivePlayer}
+          actionMode={game.actionMode}
+          flip3State={game.flip3State}
+          selectActionTarget={game.selectActionTarget}
+          cancelAction={game.cancelAction}
           remainingNumbers={game.remainingNumbers}
           remainingMods={game.remainingMods}
           remainingActs={game.remainingActs}
