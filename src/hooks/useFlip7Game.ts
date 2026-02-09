@@ -236,19 +236,11 @@ export function useFlip7Game(): Flip7Game {
         return;
       }
 
-      // Freeze or Flip3
-      const isInitialDeal = (playerCards[target]?.length || 0) === 0;
-      if (isInitialDeal) {
-        // First card of the round — action has no effect, auto-advance
-        const next = getNextActivePlayer(target);
-        setActivePlayer(next);
-      } else {
-        // Enter targeting mode
-        setActionMode({
-          type: card.value === "Freeze" ? "freeze" : "flip3",
-          sourcePlayer: target,
-        });
-      }
+      // Freeze or Flip3 — always enter targeting mode
+      setActionMode({
+        type: card.value === "Freeze" ? "freeze" : "flip3",
+        sourcePlayer: target,
+      });
       return;
     }
 
