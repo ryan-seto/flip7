@@ -374,6 +374,13 @@ export function useFlip7Game(): Flip7Game {
     }
   };
 
+  // Auto-end round when a player achieves Flip 7
+  useEffect(() => {
+    if (screen === "playing" && anyFlip7 && !actionMode && !flip3State) {
+      endRound();
+    }
+  }, [anyFlip7, actionMode, flip3State]);
+
   const nextRound = () => {
     const newDealer = (dealerIndex + 1) % players.length;
     setDealerIndex(newDealer);
