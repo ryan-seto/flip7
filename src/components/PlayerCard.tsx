@@ -12,6 +12,7 @@ interface PlayerCardProps {
   cards: Card[];
   status: PlayerStatus;
   uniqueNumberCount: number;
+  showOdds?: boolean;
 }
 
 const STATUS_CONFIG: Record<PlayerStatus, { color: string; label: string }> = {
@@ -32,6 +33,7 @@ export function PlayerCard({
   cards,
   status,
   uniqueNumberCount,
+  showOdds = true,
 }: PlayerCardProps) {
   const isBusted = status === "busted";
   const isOut = status !== "active";
@@ -122,7 +124,7 @@ export function PlayerCard({
       </div>
 
       {/* Bust probability */}
-      {!isOut && cards.some((c) => c.type === "number") && (
+      {showOdds && !isOut && cards.some((c) => c.type === "number") && (
         <div className="mt-1">
           <div className="flex justify-between items-center mb-1">
             <span className="text-xs text-flip-subtle font-mono tracking-wide">BUST RISK</span>

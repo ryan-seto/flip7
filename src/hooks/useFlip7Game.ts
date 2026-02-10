@@ -1,24 +1,51 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type {
   Card,
   CardOption,
   PlayerStatus,
   GameScreen,
+  DeckMode,
   RoundScore,
   UndoState,
   ActionMode,
   Flip3State,
   Flip7Game,
 } from "../types/game";
-import { MODIFIERS, MAX_PLAYERS } from "../constants/deck";
+import { NUMBER_CARDS, MODIFIERS, MAX_PLAYERS } from "../constants/deck";
 import { getRemainingNumberCounts, getRemainingSpecialCounts } from "../utils/deck";
 import { calcScore } from "../utils/scoring";
+
+/** Count total remaining cards given only deckUsed (no player hands). */
+function computeRemaining(used: Card[]) {
+  const numCounts: Record<number, number> = {};
+  for (let i = 0; i <= 12; i++) numCounts[i] = NUMBER_CARDS[i];
+  const modCounts: Record<string, number> = {};
+  MODIFIERS.forEach((m) => (modCounts[m] = 1));
+  const actCounts: Record<string, number> = { Freeze: 3, Flip3: 3, "2ndChance": 3 };
+
+  for (const c of used) {
+    if (c.type === "number" && typeof c.value === "number") numCounts[c.value]--;
+    if (c.type === "modifier" && typeof c.value === "string") modCounts[c.value]--;
+    if (c.type === "action" && typeof c.value === "string") actCounts[c.value]--;
+  }
+
+  const getRemainingCount = () => {
+    let t = 0;
+    for (let i = 0; i <= 12; i++) t += Math.max(0, numCounts[i]);
+    Object.values(modCounts).forEach((v) => (t += Math.max(0, v)));
+    Object.values(actCounts).forEach((v) => (t += Math.max(0, v)));
+    return t;
+  };
+
+  return { getRemainingCount };
+}
 
 export function useFlip7Game(): Flip7Game {
   const [screen, setScreen] = useState<GameScreen>("setup");
   const [players, setPlayers] = useState<string[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [targetScore, setTargetScore] = useState(200);
+  const [deckMode, setDeckMode] = useState<DeckMode>("reset");
 
   // Game state
   const [totalScores, setTotalScores] = useState<Record<string, number>>({});
@@ -71,6 +98,19 @@ export function useFlip7Game(): Flip7Game {
     return t;
   }, [remainingNumbers, remainingMods, remainingActs]);
 
+  // Auto-reshuffle discard pile mid-round when deck runs out in persistent mode
+  // Only reshuffles deckUsed — cards in players' hands stay in play
+  useEffect(() => {
+    if (
+      deckMode === "persistent" &&
+      screen === "playing" &&
+      totalRemainingCards === 0 &&
+      deckUsed.length > 0
+    ) {
+      setDeckUsed([]);
+    }
+  }, [deckMode, screen, totalRemainingCards, deckUsed.length]);
+
   const addPlayer = () => {
     const name = newPlayerName.trim();
     if (name && !players.includes(name) && players.length < MAX_PLAYERS) {
@@ -81,7 +121,7 @@ export function useFlip7Game(): Flip7Game {
 
   const removePlayer = (name: string) => setPlayers(players.filter((p) => p !== name));
 
-  const initRound = (dIdx: number) => {
+  const initRound = (dIdx: number, preserveDeck = false) => {
     const cards: Record<string, Card[]> = {};
     const status: Record<string, PlayerStatus> = {};
     players.forEach((p) => {
@@ -92,7 +132,7 @@ export function useFlip7Game(): Flip7Game {
     setPlayerStatus(status);
     const starter = players[(dIdx + 1) % players.length];
     setActivePlayer(starter);
-    setDeckUsed([]);
+    if (!preserveDeck) setDeckUsed([]);
     setUndoStack([]);
     setActionMode(null);
     setFlip3State(null);
@@ -338,7 +378,26 @@ export function useFlip7Game(): Flip7Game {
     const newDealer = (dealerIndex + 1) % players.length;
     setDealerIndex(newDealer);
     setRoundNumber((r) => r + 1);
-    initRound(newDealer);
+
+    if (deckMode === "persistent") {
+      // Transfer all player cards to deckUsed (they're consumed, not returned to deck)
+      const allUsed = [...deckUsed];
+      players.forEach((p) => allUsed.push(...(playerCards[p] || [])));
+
+      // Check if deck would be empty — if so, reshuffle
+      const { getRemainingCount } = computeRemaining(allUsed);
+      if (getRemainingCount() === 0) {
+        // Deck exhausted — reshuffle
+        setDeckUsed([]);
+        initRound(newDealer, false);
+      } else {
+        setDeckUsed(allUsed);
+        initRound(newDealer, true);
+      }
+    } else {
+      initRound(newDealer);
+    }
+
     setScreen("playing");
   };
 
@@ -376,8 +435,10 @@ export function useFlip7Game(): Flip7Game {
     players,
     newPlayerName,
     targetScore,
+    deckMode,
     setNewPlayerName,
     setTargetScore,
+    setDeckMode,
     addPlayer,
     removePlayer,
     startGame,

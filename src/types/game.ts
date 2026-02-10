@@ -13,6 +13,8 @@ export type PlayerStatus = "active" | "busted" | "frozen" | "stayed";
 
 export type GameScreen = "setup" | "playing" | "roundEnd" | "gameOver";
 
+export type DeckMode = "reset" | "persistent";
+
 export interface RoundScore {
   round: number;
   scores: Record<string, number>;
@@ -52,8 +54,10 @@ export interface Flip7Game {
   players: string[];
   newPlayerName: string;
   targetScore: number;
+  deckMode: DeckMode;
   setNewPlayerName: (name: string) => void;
   setTargetScore: (score: number) => void;
+  setDeckMode: (mode: DeckMode) => void;
   addPlayer: () => void;
   removePlayer: (name: string) => void;
   startGame: () => void;

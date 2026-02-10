@@ -7,7 +7,7 @@ export const MODIFIERS = ["+2", "+4", "+6", "+8", "+10", "X2"] as const;
 
 export const ACTION_NAMES = ["Freeze", "Flip3", "2ndChance"] as const;
 
-export const MAX_PLAYERS = 6;
+export const MAX_PLAYERS = 18;
 
 export const CARD_DISPLAY_NAMES: Record<string, string> = {
   Flip3: "Flip 3",
@@ -16,7 +16,7 @@ export const CARD_DISPLAY_NAMES: Record<string, string> = {
 
 export const CARD_COLORS: Record<string, CardColors> = {
   number: { bg: "#FFF8ED", border: "#C94040", text: "#C94040" },
-  modifier: { bg: "#FDF3E0", border: "#3B5DAA", text: "#3B5DAA" },
+  modifier: { bg: "#FFF3E0", border: "#D4803A", text: "#D4803A" },
   action: { bg: "#FFF8ED", border: "#D4943A", text: "#D4943A" },
 };
 

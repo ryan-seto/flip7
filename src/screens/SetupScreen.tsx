@@ -1,20 +1,25 @@
 import { useState, useRef, useEffect } from "react";
-import type { Flip7Game } from "../types/game";
+import type { Flip7Game, DeckMode } from "../types/game";
 import { MAX_PLAYERS } from "../constants/deck";
 
 type SetupProps = Pick<
   Flip7Game,
-  "players" | "newPlayerName" | "targetScore" | "setNewPlayerName" | "setTargetScore" | "addPlayer" | "removePlayer" | "startGame"
+  "players" | "newPlayerName" | "targetScore" | "deckMode" | "setNewPlayerName" | "setTargetScore" | "setDeckMode" | "addPlayer" | "removePlayer" | "startGame"
 >;
 
-const ORDINALS = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
+const ORDINALS = [
+  "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th",
+  "10th", "11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th",
+];
 
 export function SetupScreen({
   players,
   newPlayerName,
   targetScore,
+  deckMode,
   setNewPlayerName,
   setTargetScore,
+  setDeckMode,
   addPlayer,
   removePlayer,
   startGame,
@@ -82,6 +87,31 @@ export function SetupScreen({
                 </button>
               </>
             )}
+          </div>
+        </div>
+
+        {/* Deck mode */}
+        <div className="mb-6 bg-flip-card border border-flip-border rounded-xl px-4 py-3">
+          <label className="text-sm text-flip-subtle tracking-[2px] font-mono font-bold block mb-2">
+            DECK MODE
+          </label>
+          <div className="flex gap-2">
+            {([
+              { value: "reset" as DeckMode, label: "Reset each round" },
+              { value: "persistent" as DeckMode, label: "Persistent (official)" },
+            ]).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setDeckMode(opt.value)}
+                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-mono transition-all border ${
+                  deckMode === opt.value
+                    ? "bg-flip-accent/10 border-flip-accent text-flip-accent"
+                    : "bg-transparent border-flip-border text-flip-muted cursor-pointer hover:border-flip-dark-border"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 

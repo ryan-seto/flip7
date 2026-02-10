@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Flip7Game } from "../types/game";
 import { calcBustProb, calcScore } from "../hooks/useFlip7Game";
 import { PlayerCard } from "../components/PlayerCard";
@@ -72,6 +73,7 @@ export function PlayingScreen({
   canUndo,
   resetGame,
 }: PlayingProps) {
+  const [showOdds, setShowOdds] = useState(true);
   const isTargeting = actionMode !== null;
   const isFlip3Dealing = flip3State !== null;
 
@@ -101,10 +103,24 @@ export function PlayingScreen({
               Undo
             </button>
             <button
-              onClick={() => setShowDeckView(!showDeckView)}
-              className="px-3 py-1.5 rounded-md border border-flip-dark-border bg-flip-border text-flip-subtle text-xs font-semibold font-mono cursor-pointer"
+              onClick={() => setShowOdds(!showOdds)}
+              className={`px-3 py-1.5 rounded-md border text-xs font-semibold font-mono cursor-pointer ${
+                showOdds
+                  ? "border-flip-accent bg-flip-accent/10 text-flip-accent"
+                  : "border-flip-dark-border bg-flip-border text-flip-subtle"
+              }`}
             >
-              {showDeckView ? "Hide" : "Deck"}
+              Odds
+            </button>
+            <button
+              onClick={() => setShowDeckView(!showDeckView)}
+              className={`px-3 py-1.5 rounded-md border text-xs font-semibold font-mono cursor-pointer ${
+                showDeckView
+                  ? "border-flip-accent bg-flip-accent/10 text-flip-accent"
+                  : "border-flip-dark-border bg-flip-border text-flip-subtle"
+              }`}
+            >
+              Deck
             </button>
             <button
               onClick={resetGame}
@@ -192,6 +208,7 @@ export function PlayingScreen({
                 cards={cards}
                 status={playerStatus[p]}
                 uniqueNumberCount={uniqueNums.size}
+                showOdds={showOdds}
               />
             );
           })}

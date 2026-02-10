@@ -14,8 +14,10 @@ export default function App() {
           players={game.players}
           newPlayerName={game.newPlayerName}
           targetScore={game.targetScore}
+          deckMode={game.deckMode}
           setNewPlayerName={game.setNewPlayerName}
           setTargetScore={game.setTargetScore}
+          setDeckMode={game.setDeckMode}
           addPlayer={game.addPlayer}
           removePlayer={game.removePlayer}
           startGame={game.startGame}
