@@ -29,22 +29,22 @@ export function CardDealingControls({
   return (
     <>
       <div className="bg-flip-panel rounded-xl p-4 border border-flip-accent/25 mb-4"
-        style={isFlip3 ? { borderColor: "#f5a62340" } : undefined}
+        style={isFlip3 ? { borderColor: "#D4943A40" } : undefined}
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           {isFlip3 ? (
-            <span className="text-[13px] font-bold text-flip-gold font-display">
+            <span className="text-sm font-bold text-flip-gold font-mono">
               Flip 3: Dealing to {flip3Target} ({flip3Progress})
             </span>
           ) : (
             <>
-              <span className="text-[13px] font-bold text-flip-accent font-display">
+              <span className="text-sm font-bold text-flip-accent font-mono">
                 Dealing to: {activePlayer}
               </span>
               <button
                 onClick={onStay}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold font-mono cursor-pointer bg-flip-stay/10 text-flip-stay border border-flip-stay/25"
+                className="px-3 py-1.5 rounded-md text-xs font-semibold font-mono cursor-pointer bg-flip-stay/10 text-flip-stay border border-flip-stay/25"
               >
                 Stay
               </button>
@@ -54,7 +54,7 @@ export function CardDealingControls({
 
         {/* Number cards */}
         <div className="mb-2.5">
-          <div className="text-[10px] text-flip-subtle font-mono mb-1.5 tracking-widest">
+          <div className="text-xs text-flip-subtle font-mono mb-1.5 tracking-widest">
             NUMBER CARDS
           </div>
           <div className="flex flex-wrap gap-1">
@@ -72,7 +72,7 @@ export function CardDealingControls({
 
         {/* Modifiers */}
         <div className="mb-2.5">
-          <div className="text-[10px] text-flip-subtle font-mono mb-1.5 tracking-widest">
+          <div className="text-xs text-flip-subtle font-mono mb-1.5 tracking-widest">
             MODIFIERS
           </div>
           <div className="flex flex-wrap gap-1">
@@ -91,7 +91,7 @@ export function CardDealingControls({
         {/* Action cards — only show during normal dealing, not during flip3 */}
         {!isFlip3 && (
           <div>
-            <div className="text-[10px] text-flip-subtle font-mono mb-1.5 tracking-widest">
+            <div className="text-xs text-flip-subtle font-mono mb-1.5 tracking-widest">
               ACTION CARDS
             </div>
             <div className="flex flex-wrap gap-1">
@@ -112,7 +112,7 @@ export function CardDealingControls({
       {/* Discard zone — only during normal dealing */}
       {!isFlip3 && (
         <details className="mb-4">
-          <summary className="text-[11px] text-flip-muted cursor-pointer font-mono">
+          <summary className="text-xs text-flip-muted cursor-pointer font-mono">
             ▸ Discard card from deck (not dealt to player)
           </summary>
           <div className="mt-2 flex flex-wrap gap-1">

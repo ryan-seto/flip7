@@ -37,7 +37,7 @@ function DeckChip({
 
   return (
     <div
-      className={`px-2 py-1 rounded-md text-[11px] font-bold font-mono border ${c.bg} ${c.text} ${c.border}`}
+      className={`px-2 py-1 rounded-md text-xs font-bold font-mono border ${c.bg} ${c.text} ${c.border}`}
     >
       {label}×{Math.max(0, count)}
     </div>
@@ -47,7 +47,7 @@ function DeckChip({
 export function DeckView({ remainingNumbers, remainingMods, remainingActs }: DeckViewProps) {
   return (
     <div className="bg-flip-card border border-flip-border rounded-xl p-4 mb-4">
-      <div className="text-[11px] text-flip-subtle font-mono mb-2 tracking-wide">
+      <div className="text-xs text-flip-subtle font-mono mb-2 tracking-wide">
         REMAINING IN DECK
       </div>
       <div className="flex flex-wrap gap-1">

@@ -1,9 +1,13 @@
+import { useState, useRef, useEffect } from "react";
 import type { Flip7Game } from "../types/game";
+import { MAX_PLAYERS } from "../constants/deck";
 
 type SetupProps = Pick<
   Flip7Game,
   "players" | "newPlayerName" | "targetScore" | "setNewPlayerName" | "setTargetScore" | "addPlayer" | "removePlayer" | "startGame"
 >;
+
+const ORDINALS = ["1st", "2nd", "3rd", "4th", "5th", "6th"];
 
 export function SetupScreen({
   players,
@@ -15,76 +19,113 @@ export function SetupScreen({
   removePlayer,
   startGame,
 }: SetupProps) {
+  const [editingScore, setEditingScore] = useState(false);
+  const [scoreInput, setScoreInput] = useState(String(targetScore));
+  const scoreInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingScore) scoreInputRef.current?.select();
+  }, [editingScore]);
+
+  const commitScore = () => {
+    const parsed = parseInt(scoreInput, 10);
+    if (parsed > 0) setTargetScore(parsed);
+    else setScoreInput(String(targetScore));
+    setEditingScore(false);
+  };
+
   return (
     <div className="min-h-screen bg-flip-bg text-flip-text font-display flex justify-center p-4">
       <div className="w-full max-w-[480px] pt-6 pb-20">
-        {/* Title */}
+        {/* Banner */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-white font-mono tracking-[4px] m-0 mb-1 [text-shadow:0_0_30px_#e9456040]">
-            FLIP<span className="text-flip-red">7</span>
-          </h1>
-          <p className="text-[11px] text-flip-muted tracking-[3px] font-mono">
+          <img
+            src={`${import.meta.env.BASE_URL}banner.png`}
+            alt="Flip 7"
+            className="w-full mx-auto rounded-xl"
+          />
+          <p className="text-sm text-flip-muted tracking-[3px] font-mono font-semibold mt-2">
             SCORE TRACKER & ODDS CALCULATOR
           </p>
         </div>
 
         {/* Target score */}
-        <div className="mb-6">
-          <label className="text-[10px] text-flip-subtle tracking-[2px] font-mono font-bold">
+        <div className="mb-6 bg-flip-card border border-flip-border rounded-xl px-4 py-3 flex items-center justify-between">
+          <label className="text-sm text-flip-subtle tracking-[2px] font-mono font-bold">
             TARGET SCORE
           </label>
-          <div className="flex gap-2 mt-1">
-            {[100, 200, 300].map((v) => (
-              <button
-                key={v}
-                onClick={() => setTargetScore(v)}
-                className={`px-5 py-2 rounded-lg text-sm font-bold font-mono cursor-pointer border transition-colors ${
-                  targetScore === v
-                    ? "bg-flip-red text-white border-flip-red"
-                    : "bg-flip-border text-flip-subtle border-flip-dark-border"
-                }`}
-              >
-                {v}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            {editingScore ? (
+              <input
+                ref={scoreInputRef}
+                type="number"
+                value={scoreInput}
+                onChange={(e) => setScoreInput(e.target.value)}
+                onBlur={commitScore}
+                onKeyDown={(e) => e.key === "Enter" && commitScore()}
+                className="w-24 bg-flip-panel border border-flip-accent rounded-lg px-3 py-1.5 text-xl font-extrabold font-mono text-flip-text outline-none text-center"
+              />
+            ) : (
+              <>
+                <span className="text-xl font-extrabold font-mono text-flip-accent">
+                  {targetScore}
+                </span>
+                <button
+                  onClick={() => { setScoreInput(String(targetScore)); setEditingScore(true); }}
+                  className="bg-transparent border-none text-flip-subtle cursor-pointer p-1 hover:text-flip-accent transition-colors"
+                  aria-label="Edit target score"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Players */}
         <div className="mb-6">
-          <label className="text-[10px] text-flip-subtle tracking-[2px] font-mono font-bold">
+          <label className="text-sm text-flip-subtle tracking-[2px] font-mono font-bold">
             PLAYERS{" "}
-            <span className="text-flip-muted font-normal">(first player listed will be round 1 dealer)</span>
+            <span className="text-xs text-flip-muted font-normal tracking-normal">(first listed = round 1 dealer)</span>
           </label>
-          <div className="flex gap-2 mt-2">
-            <input
-              type="text"
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addPlayer()}
-              placeholder="Player name..."
-              maxLength={16}
-              className="flex-1 bg-flip-border border border-flip-dark-border rounded-lg px-3.5 py-2.5 text-flip-text text-sm font-display outline-none focus:border-flip-accent transition-colors"
-            />
-            <button
-              onClick={addPlayer}
-              className="w-[42px] h-[42px] rounded-lg border border-flip-accent bg-flip-accent/10 text-flip-accent text-xl font-bold cursor-pointer hover:bg-flip-accent/20 transition-colors"
-            >
-              +
-            </button>
-          </div>
+          {players.length < MAX_PLAYERS ? (
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={newPlayerName}
+                onChange={(e) => setNewPlayerName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addPlayer()}
+                placeholder="Player name..."
+                maxLength={16}
+                className="flex-1 bg-flip-card border border-flip-border rounded-lg px-3.5 py-3 text-flip-text text-base font-mono outline-none focus:border-flip-accent transition-colors"
+              />
+              <button
+                onClick={addPlayer}
+                className="w-[46px] h-[46px] rounded-lg border border-flip-accent bg-flip-accent/10 text-flip-accent text-xl font-bold cursor-pointer hover:bg-flip-accent/20 transition-colors"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <p className="text-flip-muted text-xs text-center mt-2 font-mono">
+              Maximum {MAX_PLAYERS} players
+            </p>
+          )}
           <div className="mt-3 flex flex-col gap-1.5">
             {players.map((p, i) => (
               <div
                 key={p}
-                className="flex justify-between items-center px-3.5 py-2.5 bg-flip-panel rounded-lg border border-flip-border"
+                className="flex justify-between items-center px-3.5 py-3 bg-flip-card rounded-lg border border-flip-border"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-flip-text font-semibold font-display">
-                    {i + 1}. {p}
+                  <span className="text-flip-text text-base font-semibold font-mono">
+                    {ORDINALS[i]} {p}
                   </span>
                   {i === 0 && (
-                    <span className="text-[9px] text-flip-gold font-mono">DEALER</span>
+                    <span className="text-[11px] text-flip-gold font-bold font-mono">DEALER</span>
                   )}
                 </div>
                 <button
@@ -96,7 +137,7 @@ export function SetupScreen({
               </div>
             ))}
             {players.length === 0 && (
-              <p className="text-flip-dim text-[13px] text-center p-4 italic">
+              <p className="text-flip-dim text-sm text-center p-4 italic">
                 Add at least 2 players to start
               </p>
             )}
@@ -107,7 +148,7 @@ export function SetupScreen({
         <button
           onClick={startGame}
           disabled={players.length < 2}
-          className={`w-full py-3.5 rounded-[10px] border-none bg-flip-red text-white text-sm font-extrabold tracking-[2px] font-mono transition-all ${
+          className={`w-full py-4 rounded-[10px] border-none bg-flip-red text-flip-card text-base font-extrabold tracking-[2px] font-mono transition-all ${
             players.length < 2 ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:brightness-110"
           }`}
         >

@@ -21,7 +21,7 @@ export function RoundEndScreen({
   return (
     <div className="min-h-screen bg-flip-bg text-flip-text font-display flex justify-center p-4">
       <div className="w-full max-w-[480px] pt-6 pb-20">
-        <h2 className="text-[22px] font-black text-white font-mono tracking-[4px] text-center mb-1 [text-shadow:0_0_30px_#e9456040]">
+        <h2 className="text-[22px] font-black text-flip-text font-display tracking-[4px] text-center mb-1">
           ROUND {roundNumber} COMPLETE
         </h2>
         <p className="text-flip-muted text-xs text-center mb-2 font-mono">
@@ -46,11 +46,11 @@ export function RoundEndScreen({
                 <div className="flex items-center gap-2.5">
                   <span
                     className="text-sm font-extrabold font-mono w-5"
-                    style={{ color: i === 0 ? "#4ecca3" : "#555" }}
+                    style={{ color: i === 0 ? "#1A7A6D" : "#9B8E7B" }}
                   >
                     {i + 1}
                   </span>
-                  <span className="text-flip-text font-semibold font-display">{p}</span>
+                  <span className="text-flip-text font-semibold font-mono">{p}</span>
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-extrabold text-flip-accent font-mono">
@@ -59,7 +59,7 @@ export function RoundEndScreen({
                   <div
                     className="text-[11px] font-mono"
                     style={{
-                      color: (lastRound?.scores[p] ?? 0) > 0 ? "#4ecca380" : "#e9456080",
+                      color: (lastRound?.scores[p] ?? 0) > 0 ? "#1A7A6D" : "#C94040",
                     }}
                   >
                     {(lastRound?.scores[p] ?? 0) > 0 ? "+" : ""}
@@ -72,7 +72,7 @@ export function RoundEndScreen({
 
         <button
           onClick={nextRound}
-          className="w-full py-3.5 rounded-[10px] border-none bg-flip-red text-white text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
+          className="w-full py-3.5 rounded-[10px] border-none bg-flip-red text-flip-card text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
         >
           NEXT ROUND →
         </button>

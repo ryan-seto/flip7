@@ -1,5 +1,5 @@
 import type { Card } from "../types/game";
-import { CARD_COLORS } from "../constants/deck";
+import { getCardColors, CARD_DISPLAY_NAMES } from "../constants/deck";
 
 interface CardButtonProps {
   card: Card;
@@ -9,7 +9,7 @@ interface CardButtonProps {
 }
 
 export function CardButton({ card, onClick, small, disabled }: CardButtonProps) {
-  const colors = CARD_COLORS[card.type];
+  const colors = getCardColors(card.type, card.value);
   const isAction = card.type === "action";
 
   return (
@@ -21,8 +21,8 @@ export function CardButton({ card, onClick, small, disabled }: CardButtonProps) 
         width: isAction ? (small ? 80 : 90) : small ? 48 : 56,
         height: small ? 64 : 74,
         border: `2px solid ${colors.border}`,
-        background: disabled ? "#2a2a3a" : colors.bg,
-        color: disabled ? "#555" : colors.text,
+        background: disabled ? "#E8DDCC" : colors.bg,
+        color: disabled ? "#B5A898" : colors.text,
         fontSize: isAction ? (small ? 11 : 13) : small ? 13 : 16,
         lineHeight: 1.1,
         padding: 2,
@@ -30,7 +30,7 @@ export function CardButton({ card, onClick, small, disabled }: CardButtonProps) 
         cursor: disabled ? "not-allowed" : "pointer",
       }}
     >
-      {card.value}
+      {typeof card.value === "string" ? (CARD_DISPLAY_NAMES[card.value] ?? card.value) : card.value}
     </button>
   );
 }

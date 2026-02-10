@@ -1,5 +1,5 @@
 import type { Card, PlayerStatus } from "../types/game";
-import { CARD_COLORS } from "../constants/deck";
+import { getCardColors, CARD_DISPLAY_NAMES } from "../constants/deck";
 
 interface PlayerCardProps {
   player: string;
@@ -15,10 +15,10 @@ interface PlayerCardProps {
 }
 
 const STATUS_CONFIG: Record<PlayerStatus, { color: string; label: string }> = {
-  active: { color: "#4ecca3", label: "ACTIVE" },
-  busted: { color: "#e94560", label: "BUSTED" },
-  frozen: { color: "#53d8fb", label: "FROZEN" },
-  stayed: { color: "#7ec8e3", label: "STAYED" },
+  active: { color: "#1A7A6D", label: "ACTIVE" },
+  busted: { color: "#C94040", label: "BUSTED" },
+  frozen: { color: "#3B5DAA", label: "FROZEN" },
+  stayed: { color: "#5A9EC4", label: "STAYED" },
 };
 
 export function PlayerCard({
@@ -44,27 +44,27 @@ export function PlayerCard({
       onClick={clickable ? onClick : undefined}
       className="rounded-xl px-4 py-3.5 relative overflow-hidden transition-all duration-200"
       style={{
-        background: isTargetable ? "#1a2e3e" : isActive ? "#16213e" : "#0f0f23",
+        background: isTargetable ? "#FDF3E0" : isActive ? "#FFFDF5" : "#FFFDF5",
         border: `2px solid ${
           isTargetable
-            ? "#f5a623"
+            ? "#D4943A"
             : isActive
-              ? "#4ecca3"
+              ? "#1A7A6D"
               : isBusted
-                ? "#e9456040"
-                : "#1a1a3e"
+                ? "#C9404040"
+                : "#C9B99A"
         }`,
         cursor: clickable ? "pointer" : "default",
         boxShadow: isTargetable
-          ? "0 0 20px #f5a62330"
+          ? "0 0 12px #D4943A30"
           : isActive
-            ? "0 0 20px #4ecca320"
+            ? "0 0 12px #1A7A6D20"
             : "none",
       }}
     >
       {/* Targeting overlay indicator */}
       {isTargetable && (
-        <div className="absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded font-mono tracking-wide bg-flip-gold/20 text-flip-gold animate-pulse">
+        <div className="absolute top-2 right-2 text-xs font-bold px-2 py-0.5 rounded font-mono tracking-wide bg-flip-gold/20 text-flip-gold animate-pulse">
           TAP TO SELECT
         </div>
       )}
@@ -74,15 +74,15 @@ export function PlayerCard({
         <div className="flex items-center gap-2">
           {isDealer && (
             <span
-              className="text-[9px] font-bold px-1.5 py-0.5 rounded font-mono tracking-wide"
-              style={{ background: "#f5a62320", color: "#f5a623" }}
+              className="text-xs font-bold px-1.5 py-0.5 rounded font-mono tracking-wide"
+              style={{ background: "#D4943A20", color: "#D4943A" }}
             >
               DEALER
             </span>
           )}
-          <span className="font-bold text-base text-flip-text font-display">{player}</span>
+          <span className="font-bold text-base text-flip-text font-mono">{player}</span>
           <span
-            className="text-[10px] font-bold px-2 py-0.5 rounded-full font-mono tracking-widest"
+            className="text-xs font-bold px-2 py-0.5 rounded-full font-mono tracking-widest"
             style={{ background: statusColor + "20", color: statusColor }}
           >
             {statusText}
@@ -90,7 +90,7 @@ export function PlayerCard({
         </div>
         <span
           className="text-[22px] font-extrabold font-mono"
-          style={{ color: isBusted ? "#e9456060" : "#4ecca3" }}
+          style={{ color: isBusted ? "#C9404060" : "#1A7A6D" }}
         >
           {isBusted ? 0 : score}
         </span>
@@ -98,23 +98,26 @@ export function PlayerCard({
 
       {/* Cards row */}
       <div className="flex gap-1 flex-wrap mb-2 min-h-[36px]">
-        {cards.map((c, i) => (
+        {cards.map((c, i) => {
+          const cc = getCardColors(c.type, c.value);
+          return (
           <span
             key={i}
-            className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-xs font-bold font-mono"
+            className="inline-flex items-center justify-center px-2 py-0.5 rounded-md text-sm font-bold font-mono"
             style={{
-              background: CARD_COLORS[c.type].border + "20",
-              color: CARD_COLORS[c.type].text,
-              border: `1px solid ${CARD_COLORS[c.type].border}40`,
+              background: cc.border + "20",
+              color: cc.text,
+              border: `1px solid ${cc.border}40`,
               textDecoration: isBusted ? "line-through" : "none",
               opacity: isBusted ? 0.5 : 1,
             }}
           >
-            {c.value}
+            {typeof c.value === "string" ? (CARD_DISPLAY_NAMES[c.value] ?? c.value) : c.value}
           </span>
-        ))}
+          );
+        })}
         {cards.length === 0 && (
-          <span className="text-flip-dim text-xs italic">No cards yet</span>
+          <span className="text-flip-dim text-sm italic">No cards yet</span>
         )}
       </div>
 
@@ -122,11 +125,11 @@ export function PlayerCard({
       {!isOut && cards.some((c) => c.type === "number") && (
         <div className="mt-1">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] text-flip-subtle font-mono tracking-wide">BUST RISK</span>
+            <span className="text-xs text-flip-subtle font-mono tracking-wide">BUST RISK</span>
             <span
-              className="text-[13px] font-bold font-mono"
+              className="text-sm font-bold font-mono"
               style={{
-                color: bustProb > 0.5 ? "#e94560" : bustProb > 0.25 ? "#f5a623" : "#4ecca3",
+                color: bustProb > 0.5 ? "#C94040" : bustProb > 0.25 ? "#D4943A" : "#1A7A6D",
               }}
             >
               {(bustProb * 100).toFixed(1)}%
@@ -139,19 +142,19 @@ export function PlayerCard({
                 width: `${Math.min(bustProb * 100, 100)}%`,
                 background:
                   bustProb > 0.5
-                    ? "linear-gradient(90deg, #e94560, #ff6b6b)"
+                    ? "linear-gradient(90deg, #C94040, #E06050)"
                     : bustProb > 0.25
-                      ? "linear-gradient(90deg, #f5a623, #ffd93d)"
-                      : "linear-gradient(90deg, #4ecca3, #6bffcc)",
+                      ? "linear-gradient(90deg, #D4943A, #E8B060)"
+                      : "linear-gradient(90deg, #1A7A6D, #2AA090)",
               }}
             />
           </div>
           <div className="flex justify-between mt-1">
-            <span className="text-[9px] text-flip-muted font-mono">
+            <span className="text-xs text-flip-muted font-mono">
               {uniqueNumberCount}/7 unique numbers
             </span>
             {flip7 && (
-              <span className="text-[9px] text-flip-gold font-bold font-mono">
+              <span className="text-xs text-flip-gold font-bold font-mono">
                 ★ FLIP 7 BONUS! +15
               </span>
             )}

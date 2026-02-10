@@ -37,6 +37,7 @@ type PlayingProps = Pick<
   | "endRound"
   | "undo"
   | "canUndo"
+  | "resetGame"
 >;
 
 export function PlayingScreen({
@@ -69,6 +70,7 @@ export function PlayingScreen({
   endRound,
   undo,
   canUndo,
+  resetGame,
 }: PlayingProps) {
   const isTargeting = actionMode !== null;
   const isFlip3Dealing = flip3State !== null;
@@ -79,10 +81,12 @@ export function PlayingScreen({
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-2xl font-black text-white font-mono tracking-[4px] m-0 [text-shadow:0_0_30px_#e9456040]">
-              FLIP<span className="text-flip-red">7</span>
-            </h1>
-            <span className="text-[11px] text-flip-muted font-mono">
+            <img
+              src={`${import.meta.env.BASE_URL}banner.png`}
+              alt="Flip 7"
+              className="h-10 rounded"
+            />
+            <span className="text-xs text-flip-muted font-mono block mt-0.5">
               ROUND {roundNumber} · {totalRemainingCards} cards left
             </span>
           </div>
@@ -90,17 +94,23 @@ export function PlayingScreen({
             <button
               onClick={undo}
               disabled={!canUndo}
-              className={`px-3 py-1.5 rounded-md border border-flip-dark-border bg-flip-border text-flip-subtle text-[11px] font-semibold font-mono cursor-pointer ${
+              className={`px-3 py-1.5 rounded-md border border-flip-dark-border bg-flip-border text-flip-subtle text-xs font-semibold font-mono cursor-pointer ${
                 !canUndo ? "opacity-30" : ""
               }`}
             >
-              ↩ Undo
+              Undo
             </button>
             <button
               onClick={() => setShowDeckView(!showDeckView)}
-              className="px-3 py-1.5 rounded-md border border-flip-dark-border bg-flip-border text-flip-subtle text-[11px] font-semibold font-mono cursor-pointer"
+              className="px-3 py-1.5 rounded-md border border-flip-dark-border bg-flip-border text-flip-subtle text-xs font-semibold font-mono cursor-pointer"
             >
               {showDeckView ? "Hide" : "Deck"}
+            </button>
+            <button
+              onClick={resetGame}
+              className="px-3 py-1.5 rounded-md border border-flip-red/30 bg-flip-red/10 text-flip-red text-xs font-semibold font-mono cursor-pointer"
+            >
+              Exit
             </button>
           </div>
         </div>
@@ -110,17 +120,17 @@ export function PlayingScreen({
         {/* Action targeting banner */}
         {isTargeting && (
           <div className="text-center py-3 mb-3 rounded-lg bg-flip-gold/10 border border-flip-gold/30">
-            <div className="text-[13px] font-bold text-flip-gold font-display mb-1">
+            <div className="text-sm font-bold text-flip-gold font-mono mb-1">
               {actionMode.sourcePlayer} drew{" "}
               {actionMode.type === "freeze" ? "Freeze" : "Flip 3"}
             </div>
-            <div className="text-[11px] text-flip-gold/70 font-mono">
+            <div className="text-xs text-flip-gold/70 font-mono">
               Tap a player to{" "}
               {actionMode.type === "freeze" ? "freeze them" : "force them to draw 3 cards"}
             </div>
             <button
               onClick={cancelAction}
-              className="mt-2 px-3 py-1 rounded text-[10px] font-mono text-flip-subtle border border-flip-dark-border cursor-pointer bg-transparent"
+              className="mt-2 px-3 py-1 rounded text-xs font-mono text-flip-subtle border border-flip-dark-border cursor-pointer bg-transparent"
             >
               Cancel
             </button>
@@ -129,14 +139,14 @@ export function PlayingScreen({
 
         {/* Flip3 dealing banner */}
         {isFlip3Dealing && (
-          <div className="text-center py-2 mb-3 text-[13px] font-bold text-flip-gold font-display bg-flip-gold/[0.06] rounded-lg">
+          <div className="text-center py-2 mb-3 text-sm font-bold text-flip-gold font-mono bg-flip-gold/[0.06] rounded-lg">
             Flip 3: Dealing to {flip3State.targetPlayer} ({flip3State.cardsDealt}/3)
           </div>
         )}
 
         {/* Normal turn indicator */}
         {!isTargeting && !isFlip3Dealing && activePlayer && playerStatus[activePlayer] === "active" && (
-          <div className="text-center py-2 mb-3 text-[13px] font-bold text-flip-accent font-display bg-flip-accent/[0.03] rounded-lg">
+          <div className="text-center py-2 mb-3 text-sm font-bold text-flip-accent font-mono bg-flip-accent/[0.03] rounded-lg">
             ▶ {activePlayer}'s turn
           </div>
         )}
@@ -220,13 +230,13 @@ export function PlayingScreen({
         {(allDone || anyFlip7) && !isTargeting && !isFlip3Dealing && (
           <button
             onClick={endRound}
-            className="w-full py-3.5 rounded-[10px] border-none bg-flip-accent text-flip-bg text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
+            className="w-full py-3.5 rounded-[10px] border-none bg-flip-accent text-flip-card text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
           >
             END ROUND
           </button>
         )}
         {!activePlayer && !allDone && !anyFlip7 && !isTargeting && !isFlip3Dealing && (
-          <p className="text-center text-flip-muted text-[13px] italic">
+          <p className="text-center text-flip-muted text-sm italic">
             Tap a player to deal them cards
           </p>
         )}

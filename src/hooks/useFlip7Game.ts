@@ -10,7 +10,7 @@ import type {
   Flip3State,
   Flip7Game,
 } from "../types/game";
-import { MODIFIERS } from "../constants/deck";
+import { MODIFIERS, MAX_PLAYERS } from "../constants/deck";
 import { getRemainingNumberCounts, getRemainingSpecialCounts } from "../utils/deck";
 import { calcScore } from "../utils/scoring";
 
@@ -73,7 +73,7 @@ export function useFlip7Game(): Flip7Game {
 
   const addPlayer = () => {
     const name = newPlayerName.trim();
-    if (name && !players.includes(name)) {
+    if (name && !players.includes(name) && players.length < MAX_PLAYERS) {
       setPlayers([...players, name]);
       setNewPlayerName("");
     }

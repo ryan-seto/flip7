@@ -11,7 +11,7 @@ export function ScoreboardStrip({ players, totalScores }: ScoreboardStripProps) 
           key={p}
           className="flex-none px-3 py-1.5 rounded-lg bg-flip-panel border border-flip-border text-center min-w-[60px]"
         >
-          <div className="text-[10px] text-flip-subtle font-mono mb-0.5">{p}</div>
+          <div className="text-xs text-flip-subtle font-mono mb-0.5">{p}</div>
           <div className="text-base font-extrabold text-flip-accent font-mono">
             {totalScores[p] || 0}
           </div>

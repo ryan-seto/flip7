@@ -21,7 +21,7 @@ export function GameOverScreen({
         {/* Winner announcement */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-2">🏆</div>
-          <h2 className="text-[28px] font-black text-white font-mono tracking-[4px] mb-1 [text-shadow:0_0_30px_#e9456040]">
+          <h2 className="text-[28px] font-black text-flip-text font-display tracking-[4px] mb-1">
             {winner} WINS!
           </h2>
           <p className="text-flip-accent text-xl font-extrabold font-mono">
@@ -61,7 +61,7 @@ export function GameOverScreen({
                       <td
                         key={p}
                         className="px-2 py-1.5 text-[13px] text-center font-mono"
-                        style={{ color: r.scores[p] > 0 ? "#4ecca3" : "#e94560" }}
+                        style={{ color: r.scores[p] > 0 ? "#1A7A6D" : "#C94040" }}
                       >
                         {r.scores[p] > 0 ? "+" : ""}
                         {r.scores[p]}
@@ -89,7 +89,7 @@ export function GameOverScreen({
 
         <button
           onClick={resetGame}
-          className="w-full py-3.5 rounded-[10px] border-none bg-flip-red text-white text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
+          className="w-full py-3.5 rounded-[10px] border-none bg-flip-red text-flip-card text-sm font-extrabold tracking-[2px] font-mono cursor-pointer transition-all hover:brightness-110"
         >
           NEW GAME
         </button>

@@ -55,6 +55,7 @@ export default function App() {
           endRound={game.endRound}
           undo={game.undo}
           canUndo={game.canUndo}
+          resetGame={game.resetGame}
         />
       );
 
